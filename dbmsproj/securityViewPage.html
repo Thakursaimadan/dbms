@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Washing Machine Live Status</title>
+</head>
+<body>
+    <h1>Washing Machine Live Status (Test website with functinality)</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>WM ID</th>
+                <th>Live Status</th>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Toggle</th> <!-- Add a new column for the toggle buttons -->
+            </tr>
+        </thead>
+        <tbody id="data-container"></tbody>
+    </table>
+
+    <script>
+        // Fetch data from your Node.js server
+        fetch('/data') // Replace with your actual route
+            .then(response => response.json())
+            .then(data => {
+                appendData(data); // Call the appendData function
+                addToggleListeners(); // Add event listeners to toggle buttons
+            })
+            .catch(error => console.error('Error fetching data:', error));
+
+        // Function to append data to the table
+        function appendData(data) {
+            const dataContainer = document.getElementById('data-container');
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.WM_ID}</td>
+                    <td>${item.Live_Status}</td>
+                    <td>${item.Type}</td>
+                    <td>${item.Location}</td>
+                    <td><button class="toggle-button" data-id="${item.WM_ID}">Toggle</button></td> <!-- Add the toggle button -->
+                `;
+                dataContainer.appendChild(row);
+            });
+        }
+
+        // Function to add event listeners to toggle buttons
+        function addToggleListeners() {
+            const toggleButtons = document.querySelectorAll('.toggle-button');
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const wmId = button.getAttribute('data-id');
+                    toggleStatus(wmId);
+                });
+            });
+        }
+
+        // Function to toggle status
+        function toggleStatus(wmId) {
+            fetch(`/toggle/${wmId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    // Assuming the response contains updated data, update UI accordingly
+                    console.log('Status toggled successfully:', data);
+                    location.reload();
+                    // You might want to update the UI to reflect the new status
+                })
+                .catch(error => console.error('Error toggling status:', error));
+        }
+    </script>
+</body>
+</html>
