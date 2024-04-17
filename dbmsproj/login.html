@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <form id="loginForm" action="/login" method="post">
+        <label for="username">Username:</label><br>
+        <input type="text" id="username" name="username" required><br><br>
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+        <button type="submit">Login</button>
+    </form>
+
+    <!-- JavaScript to handle form submission and redirection -->
+    <script>
+        // Listen for form submission
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            // Perform form submission via fetch
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams(new FormData(this))
+            })
+            .then(response => {
+                // Check if login is successful and redirected
+                if (response.redirected) {
+                    // Check if redirected to securityView.html
+                    if (response.url.includes('securityView.html')) {
+                        window.location.href = response.url; // Redirect to securityView.html
+                    } else if (response.url.includes('feedbackAdminPage.html')) {
+                        window.location.href = response.url; // Redirect to feedbackAdminPage.html
+                    } else {
+                        console.error('Invalid redirection:', response.url);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Login error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
