@@ -1,0 +1,84 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Admin Page</title>
+    <style>
+        /* Style for the button */
+        .maintenance-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h2>All Feedbacks</h2>
+    <div id="feedback-list"></div>
+    <!-- "Go to Maintenance Page" button -->
+    <button class="maintenance-button" onclick="goToMaintenancePage()">Go to Maintenance Page</button>
+
+    <script>
+
+    function goToMaintenancePage() {
+            window.location.href = '/maintenancePage.html';
+        }
+
+
+        // Function to update complaint status
+        function updateStatus(complaintId) {
+            const statusSelect = document.getElementById(`status-${complaintId}`);
+            const selectedStatus = statusSelect.value;
+
+            fetch(`/updateStatus/${complaintId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: selectedStatus })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(message => {
+                console.log('Status updated successfully:', message);
+                // Refresh the page to reflect changes
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error updating status:', error);
+            });
+        }
+
+        // Fetch feedback data from the server
+        fetch('/feedbacks')
+            .then(response => response.json())
+            .then(feedbacks => {
+                // Generate HTML to display feedbacks
+                const feedbackList = document.getElementById('feedback-list');
+                feedbacks.forEach(feedback => {
+                    const feedbackItem = document.createElement('div');
+                    feedbackItem.innerHTML = `
+                        <p><strong>Complaint:</strong> ${feedback.Complaint}</p>
+                        <p><strong>Complaint ID:</strong> ${feedback.Complaint_ID}</p>
+                        <p><strong>Complaint Status:</strong> ${feedback.Complaint_Status}</p>
+                        <p><strong>Washing Machine ID:</strong> ${feedback.WM_ID}</p>
+                        <p><strong>Student ID:</strong> ${feedback.Student_ID}</p>
+                        <select id="status-${feedback.Complaint_ID}">
+                            <option value="Working on it">Working on it</option>
+                            <option value="Solved">Solved</option>
+                        </select>
+                        <button onclick="updateStatus(${feedback.Complaint_ID})">Save</button>
+                        <hr>
+                    `;
+                    feedbackList.appendChild(feedbackItem);
+                });
+            })
+            .catch(error => console.error('Error fetching feedbacks:', error));
+    </script>
+</body>
+</html>
