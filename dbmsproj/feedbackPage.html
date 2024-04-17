@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Form</title>
+</head>
+<body>
+    <h2>Feedback Form</h2>
+    <form id="feedback-form">
+        <label for="studentID">Student ID:</label><br>
+        <input type="number" id="studentID" name="studentID" required><br><br>
+        <label for="complaint">Complaint:</label><br>
+        <textarea id="complaint" name="complaint" rows="4" cols="50" required></textarea><br><br>
+        <label for="washingMachineID">Washing Machine ID:</label><br>
+        <input type="number" id="washingMachineID" name="washingMachineID" required><br><br>
+        <button type="submit">Submit Feedback</button>
+    </form>
+
+    <script>
+        document.getElementById('feedback-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+            
+            // Get form data
+            const formData = new FormData(this);
+            
+            // Convert form data to JSON object
+            const jsonObject = {};
+            formData.forEach((value, key) => {
+                jsonObject[key] = value;
+            });
+
+            // Send feedback data to the server
+            fetch('/submitFeedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonObject)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Feedback submitted successfully:', data);
+                // Reset the form after successful submission
+                document.getElementById('feedback-form').reset();
+            })
+            .catch(error => {
+                console.error('Error submitting feedback:', error);
+            });
+        });
+    </script>
+</body>
+</html>
