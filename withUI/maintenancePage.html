@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Washing Machine Maintenance</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            color: #444;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .section h2 {
+            color: #007bff;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        select,
+        input[type="date"],
+        button {
+            width: calc(100% - 40px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            color: #444;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus,
+        input[type="date"]:focus,
+        button:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Washing Machine Maintenance</h1>
+
+        <!-- First section: Status table -->
+        <div class="section">
+            <h2>Status Table</h2>
+            <table id="status-table">
+                <!-- Table content will be populated dynamically -->
+                <thead>
+                    <tr>
+                        <th>Machine ID</th>
+                        <th>Condition</th>
+                        <th>Last Maintenance Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Table rows will be populated dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Second section: Update section -->
+        <div class="section">
+            <h2>Update Section</h2>
+            <label for="machineId">Select Washing Machine ID:</label>
+            <select id="machineId">
+                <!-- Options will be populated dynamically -->
+            </select>
+            <label for="condition">Select Condition:</label>
+            <select id="condition">
+                <option value="UnderMaintenance">Under Maintenance</option>
+                <option value="Working">Working</option>
+                <option value="Not-Working">Not Working</option>
+            </select>
+            <label for="maintenanceDate">Select Maintenance Date:</label>
+            <input type="date" id="maintenanceDate">
+            <button onclick="updateStatus()">Update</button>
+        </div>
+    </div>
+
+    <!-- JavaScript to fetch data and handle updates -->
+    <script>
+        // Fetch data for status table
+        fetch('/api/status') // Adjust the endpoint based on your server configuration
+            .then(response => response.json())
+            .then(statusData => {
+                // Sort statusData by WM_ID
+                statusData.sort((a, b) => a.WM_ID - b.WM_ID);
+
+                const statusTable = document.getElementById('status-table').getElementsByTagName('tbody')[0];
+                statusData.forEach(status => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${status.WM_ID}</td>
+                        <td>${status.Condition}</td>
+                        <td>${status.Last_Maintainance_Date.split('T')[0]}</td>
+                    `;
+                    statusTable.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching status data:', error));
+
+        // Populate washing machine IDs dropdown
+        const machineIdDropdown = document.getElementById('machineId');
+        for (let i = 1; i <= 6; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            machineIdDropdown.appendChild(option);
+        }
+
+        // Function to update status
+        function updateStatus() {
+            const machineId = document.getElementById('machineId').value;
+            const condition = document.getElementById('condition').value;
+            const maintenanceDate = document.getElementById('maintenanceDate').value;
+
+            // Send data to server to update status
+            fetch('/api/updateStatus', { // Adjust the endpoint based on your server configuration
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ machineId, condition, maintenanceDate })
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Status updated successfully');
+                } else {
+                    console.error('Error updating status');
+                }
+            })
+            .catch(error => console.error('Error updating status:', error));
+        }
+    </script>
+</body>
+</html>
+
