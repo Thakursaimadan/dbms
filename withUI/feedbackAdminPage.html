@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Admin Page</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Feedback Styles */
+        .feedback-item {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .feedback-item p {
+            margin: 0;
+            margin-bottom: 10px;
+        }
+
+        .feedback-item select {
+            margin-right: 10px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .feedback-item button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .feedback-item button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Maintenance Button Styles */
+        .maintenance-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .maintenance-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>All Feedbacks</h2>
+        <div id="feedback-list">
+            <!-- Feedbacks will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <!-- "Go to Maintenance Page" button -->
+    <button class="maintenance-button" onclick="goToMaintenancePage()">Go to Maintenance Page</button>
+
+    <script>
+        function goToMaintenancePage() {
+            window.location.href = '/maintenancePage.html';
+        }
+
+        // Function to update complaint status
+        function updateStatus(complaintId) {
+            const statusSelect = document.getElementById(`status-${complaintId}`);
+            const selectedStatus = statusSelect.value;
+
+            fetch(`/updateStatus/${complaintId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: selectedStatus })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(message => {
+                console.log('Status updated successfully:', message);
+                // Refresh the page to reflect changes
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error updating status:', error);
+            });
+        }
+
+        // Fetch feedback data from the server
+        fetch('/feedbacks')
+            .then(response => response.json())
+            .then(feedbacks => {
+                // Generate HTML to display feedbacks
+                const feedbackList = document.getElementById('feedback-list');
+                feedbacks.forEach(feedback => {
+                    const feedbackItem = document.createElement('div');
+                    feedbackItem.classList.add('feedback-item');
+                    feedbackItem.innerHTML = `
+                        <p><strong>Complaint:</strong> ${feedback.Complaint}</p>
+                        <p><strong>Complaint ID:</strong> ${feedback.Complaint_ID}</p>
+                        <p><strong>Complaint Status:</strong> ${feedback.Complaint_Status}</p>
+                        <p><strong>Washing Machine ID:</strong> ${feedback.WM_ID}</p>
+                        <p><strong>Student ID:</strong> ${feedback.Student_ID}</p>
+                        <select id="status-${feedback.Complaint_ID}">
+                            <option value="Working on it">Working on it</option>
+                            <option value="Solved">Solved</option>
+                        </select>
+                        <button onclick="updateStatus(${feedback.Complaint_ID})">Save</button>
+                    `;
+                    feedbackList.appendChild(feedbackItem);
+                });
+            })
+            .catch(error => console.error('Error fetching feedbacks:', error));
+    </script>
+</body>
+</html>
